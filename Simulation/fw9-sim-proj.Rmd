@@ -1,0 +1,660 @@
+---
+title: 'Week 6 - Midterm Assignment: A Simulation Project'
+author: "Fengchao Wang |NetID: fw9"
+date: ''
+output:
+  html_document: 
+    theme: readable
+    toc: yes  
+  pdf_document: default
+urlcolor: cyan
+---
+
+***
+
+```{r setup, echo = FALSE, message = FALSE, warning = FALSE}
+options(scipen = 1, digits = 4, width = 80)
+library(knitr)
+opts_chunk$set(cache = TRUE, autodep = TRUE)
+```
+
+# Directions
+
+This is an **individual** project similar to homework assignments. However, because of the project structure of your submission, collaboration should be more limited than an homework assignment to protect yourself from duplication. Discussion of question intent, coding problems/issues, and project administration may be discussed on the message board on a limited basis. However, sharing, copying, or providing any part of this project to another student is an infraction of the University’s rules on academic integrity. Any violation will be punished as severely as possible.
+
+- Your project must be submitted through Coursera. You are required to upload one `.zip` file, named `yourNetID-sim-proj.zip`, which contains:
+  + Your RMarkdown file which should be saved as `yourNetID-sim-proj.Rmd`.
+  + The result of knitting your RMarkdown file as `yourNetID-sim-proj.html`.
+  + Any outside data provided as a `.csv` file. (In this case, `study_1.csv` and `study_2.csv`.)
+- Your `.Rmd` file should be written such that, when stored in a folder with any data you are asked to import, it will knit properly without modification. If your `.zip` file is organized properly, this should not be an issue.
+- Include your name and NetID in the final document, not only in your filenames.
+
+This project consists of **three** simulation studies. MCS-DS and other campus graduate students must complete all three studies. Campus undergraduate students need to complete on the first two studies. There is no extra credit for undergraduates who complete the third study.
+
+Unlike a homework assignment, these "exercises" are not broken down into parts (e.g., a, b, c), and so your analysis and report submission will not be partitioned into parts. Instead, your document should be organized more like a true project report, and it should use the overall format:
+
+- Simulation Study 1
+- Simulation Study 2
+- Simulation Study 3 (*MCS and graduates only*)
+
+Within each of the simulation studies, you should use the format:
+
+- Introduction
+- Methods
+- Results
+- Discussion
+
+The **introduction** section should relay what you are attempting to accomplish. It should provide enough background to your work such that a reader would not need this directions document to understand what you are doing. Basically, assume the reader is mostly familiar with the concepts from the course, but not this project. [For the Midterm Assignment, the Introduction section is allowed to simply be the exercise statements as I have typed them later in this file. Yes, a direct copy.]
+
+The **methods** section should contain the majority of your “work.” This section will contain the bulk of the `R` code that is used to generate the results. Your `R` code is not expected to be perfect idiomatic `R`, but it is expected to be understood by a reader without too much effort. Use RMarkdown and code comments to your advantage to explain your code if needed. [For the Midterm Assignment, you may type a sentence or two explaining what you are attempting to do and then the code chunk that does it. Repeat as necessary to tell a coherent story about your method. That is, it would be clear to display your code in a few smaller chunks explaining along the way, as opposed to one giant chunk with a large paragraph trying to describe the whole thing at once.]
+
+The **results** section should contain numerical or graphical summaries of your results as they pertain to the goal of each study. [For the Midterm Assignment, while the code chunks appear in Methods, the actual plots, numeric tables, etc. would appear in Results.]
+
+The **discussion** section should contain discussion of your results. The discussion section should contain discussion of your results. Potential topics for discussion are suggested at the end of each simulation study section, but they are not meant to be an exhaustive list. These simulation studies are meant to be explorations into the principles of statistical modeling, so do not limit your responses to short, closed form answers as you do in homework assignments. Use the potential discussion questions as a starting point for your response. [For the Midterm Assignment, This is where you may give your summary of what you observe in the Results. The "Potential Topics" are meant to get your thoughts flowing and give you ideas about what to discuss. This section will be just your typed responses with no new code or results.]
+
+- Your resulting `.html` file will be considered a self-contained “report,” which is the material that will determine the majority of your grade. Be sure to visibly include all `R` code and output that is *relevant*. (You should not include irrelevant code you tried that resulted in error or did not answer the question correctly.)
+- Grading will be based on a combination of completing the required tasks, discussion of results, `R` usage, RMarkdown usage, and neatness and organization. For full details see the provided rubric.
+- At the beginning of *each* of the three simulation studies, set a seed equal to your birthday, as is done on homework. (It should be the first code run for each study.) These should be the only three times you set a seed.
+
+```{r}
+birthday = 19880210
+set.seed(birthday)
+```
+
+**One Final Note:** The simulations in this Midterm Assignment require combinations of several factors that result in a lot of computation. For example, in Simulation Study 1, the response vector that you generate will have $2 (models)×3 (sigmas)×2000 (sims)=12000$ simulated values. Expect that `R` may take longer to compile than your typical weekly Homework Assignment, especially your final report. I'll suggest two tips.
+
+- Tip 1: Make a separate `R` script, notebook, or Rmd for each Simulation Study. Thus, while you are working through one study, you are not making `R` try to compile the code for the other studies that you are not actively working on.
+- Tip 2: Start with a smaller number of simulations until you work out the bugs. For example, 200 simulations in Study 1 instead of 2000. The end Results will not be correct initially, but `R` will compile faster while you are still figuring out the code in the Methods. Once you've nailed that, update your code with the correct number of simulations.
+
+* **Good luck!** *
+
+
+# Simulation Study 1: Significance of Regression
+
+## Introduction
+In this simulation study we will investigate the significance of regression test. We will simulate from two different models:
+
+1. The **"significant"** model
+
+\[
+Y_i = \beta_0 + \beta_1 x_{i1} + \beta_2 x_{i2} + \beta_3 x_{i3} + \epsilon_i
+\]
+
+where $\epsilon_i \sim N(0, \sigma^2)$ and
+
+- $\beta_0 = 3$,
+- $\beta_1 = 1$,
+- $\beta_2 = 1$,
+- $\beta_3 = 1$.
+
+
+2. The **"non-significant"** model
+
+\[
+Y_i = \beta_0 + \beta_1 x_{i1} + \beta_2 x_{i2} + \beta_3 x_{i3} + \epsilon_i
+\]
+
+where $\epsilon_i \sim N(0, \sigma^2)$ and
+
+- $\beta_0 = 3$,
+- $\beta_1 = 0$,
+- $\beta_2 = 0$,
+- $\beta_3 = 0$.
+
+For both, we will consider a sample size of $25$ and three possible levels of noise. That is, three values of $\sigma$.
+
+- $n = 25$
+- $\sigma \in (1, 5, 10)$
+
+Use simulation to obtain an empirical distribution for each of the following values, for each of the three values of $\sigma$, for both models.
+
+- The **$F$ statistic** for the significance of regression test.
+- The **p-value** for the significance of regression test
+- **$R^2$**
+
+For each model and $\sigma$ combination, use $2000$ simulations. For each simulation, fit a regression model of the same form used to perform the simulation.
+
+Use the data found in [`study_1.csv`](study_1.csv) for the values of the predictors. These should be kept constant for the entirety of this study. The `y` values in this data are a blank placeholder.
+
+Done correctly, you will have simulated the `y` vector $2 (models)×3 (sigmas)×2000 (sims)=12000$ times.
+
+Potential discussions:
+
+- Do we know the true distribution of any of these values?
+- How do the empirical distributions from the simulations compare to the true distributions? (You could consider adding a curve for the true distributions if you know them.)
+- How are each of the $F$ statistic, the p-value, and $R^2$ related to $\sigma$? Are any of those relationships the same for the significant and non-significant models?
+
+An additional tip:
+
+- Organize the plots in a grid for easy comparison. For example, a $1 × 3$ row of $F$ statistic plots as $\sigma$ changes, then a $1 × 3$ row of $p$-value plots as $\sigma$ changes, followed by a similar row for the $R^2$ values. Consider a similar setup for the values attributed to the significant model and then again for the nonsignificant model.
+
+## Methods
+
+```{r }
+library(readr)
+study1 <- read_csv("study_1.csv")
+
+```
+```{r}
+
+# set meta parameters as global variables
+n <- 25
+sim_num <- 2000
+
+# set model parameters as global variables
+beta_0 <- 3
+beta_1 <- 1
+beta_2 <- 1
+beta_3 <- 1
+
+# function for simulation
+mlr_simulation <- function(sigma) {
+  f_stat <- rep(0, sim_num)
+  r_2 <- rep(0, sim_num)
+  p_val <- rep(0, sim_num)
+  
+  for(i in 1:sim_num) {
+    y <- beta_0 + beta_1 * study1$x1 + beta_2 * study1$x2 + beta_3 * study1$x3 + rnorm(n, 0, sigma)
+    sim_data <- cbind(study1[, 2:4], y)
+    mlr_model <- lm(y ~ x1 + x2 + x3, data = sim_data)
+    mlr_model_summary <- summary(mlr_model)
+    f_statistics <- mlr_model_summary$fstatistic
+    f_stat[i] <- f_statistics[[1]]
+    r_2[i] <- mlr_model_summary$r.squared
+    p_val[i] <- pf(f_statistics[1],f_statistics[2], f_statistics[3],lower.tail = FALSE)
+  }
+  
+  return(list(f_stat, r_2, p_val))
+}
+
+# Calculate metrics for sigma = 1
+simulation_sig_1 <- mlr_simulation(sigma = 1)
+f_stat_sig_1 <- simulation_sig_1[[1]]
+r_2_sig_1 <- simulation_sig_1[[2]]
+p_val_sig_1 <- simulation_sig_1[[3]]
+
+# Calculate metrics for sigma = 5
+simulation_sig_5 <- mlr_simulation(sigma = 5)
+f_stat_sig_5 <- simulation_sig_5[[1]]
+r_2_sig_5 <- simulation_sig_5[[2]]
+p_val_sig_5 <- simulation_sig_5[[3]]
+
+# Calculate metrics for sigma = 10
+simulation_sig_10 <- mlr_simulation(sigma = 10)
+f_stat_sig_10 <- simulation_sig_10[[1]]
+r_2_sig_10 <- simulation_sig_10[[2]]
+p_val_sig_10 <- simulation_sig_10[[3]]
+
+# Update parameters as global variables for non-significant model
+beta_0 <- 3
+beta_1 <- 0
+beta_2 <- 0
+beta_3 <- 0
+
+# Calculate metrics for non-significant model
+simulation_non_sig_1 <- mlr_simulation(sigma = 1)
+f_stat_non_sig_1 <- simulation_non_sig_1[[1]]
+r_2_non_sig_1 <- simulation_non_sig_1[[2]]
+p_val_non_sig_1 <- simulation_non_sig_1[[3]]
+
+simulation_non_sig_5 <- mlr_simulation(sigma = 5)
+f_stat_non_sig_5 <- simulation_non_sig_5[[1]]
+r_2_non_sig_5 <- simulation_non_sig_5[[2]]
+p_val_non_sig_5 <- simulation_non_sig_5[[3]]
+
+simulation_non_sig_10 <- mlr_simulation(sigma = 10)
+f_stat_non_sig_10 <- simulation_non_sig_10[[1]]
+r_2_non_sig_10 <- simulation_non_sig_10[[2]]
+p_val_non_sig_10 <- simulation_non_sig_10[[3]]
+```
+
+## Results
+```{r 1.results}
+
+xf<-seq(0,100, 0.01)
+par(mfrow=c(1,3))
+p <- 3
+df1 <- p - 1
+df2 <- n - p
+f_stat_sig_1_plot <- hist(f_stat_sig_1, xlab = "Value of F statistic", ylab = "Count", 
+                          main = "F stat., Sig, sigma = 1")
+f_stat_sig_5_plot <- hist(f_stat_sig_5, xlab = "Value of F statistic", ylab = "Count", 
+                          main = "F stat., Sig, sigma = 5")
+f_stat_sig_10_plot <- hist(f_stat_sig_10, xlab = "Value of F statistic", ylab = "Count", 
+                          main = "F stat., Sig, sigma = 10")
+lines(x = xf,y=df(xf, df1, df2))
+
+par(mfrow=c(1,3))
+p_val_sig_1_plot <- hist(p_val_sig_1, xlab = "p-value", ylab = "Count", 
+                          main = "p-value, Sig, sigma = 1")
+p_val_sig_5_plot <- hist(p_val_sig_5, xlab = "p-value", ylab = "Count", 
+                          main = "p-value, Sig, sigma = 5")
+p_val_sig_10_plot <- hist(p_val_sig_10, xlab = "p-value", ylab = "Count", 
+                          main = "p-value, Sig, sigma = 10")
+
+par(mfrow=c(1,3))
+r_2_sig_1_plot <- hist(r_2_sig_1,  xlab = "Val of R Squared", ylab = "Count", 
+                          main = "R^2, Sig, sigma = 1")
+r_2_sig_5_plot <- hist(r_2_sig_5,  xlab = "Val of R Squared", ylab = "Count", 
+                          main = "R^2, Sig, sigma = 5")
+r_2_sig_10_plot <- hist(r_2_sig_10,  xlab = "Val of R Squared", ylab = "Count", 
+                          main = "R^2, Sig, sigma = 10")
+
+# Plot non-significant model
+par(mfrow=c(1,3))
+f_stat_non_sig_1_plot <- hist(f_stat_non_sig_1, xlab = "Value of F statistic", ylab = "Count", 
+                          main = "F stat., Non-Sig, sigma = 1")
+f_stat_non_sig_5_plot <- hist(f_stat_non_sig_5, xlab = "Value of F statistic", ylab = "Count", 
+                          main = "F stat., Non-Sig, sigma = 5")
+f_stat_non_sig_10_plot <- hist(f_stat_non_sig_10, xlab = "Value of F statistic", ylab = "Count", 
+                          main = "F stat., Non-Sig, sigma = 10")
+
+par(mfrow=c(1,3))
+p_val_non_sig_1_plot <- hist(p_val_non_sig_1, xlab = "p-value", ylab = "Count", 
+                          main = "p-value, Non-Sig, sigma = 1")
+p_val_non_sig_5_plot <- hist(p_val_non_sig_5, xlab = "p-value", ylab = "Count", 
+                          main = "p-value, Non-Sig, sigma = 5")
+p_val_non_sig_10_plot <- hist(p_val_non_sig_10, xlab = "p-value", ylab = "Count", 
+                          main = "p-value, Non-Sig, sigma = 10")
+
+par(mfrow=c(1,3))
+r_2_non_sig_1_plot <- hist(r_2_non_sig_1, xlab = "Val of R Squared", ylab = "Count", 
+                          main = "R^2, Non-Sig, sigma = 1")
+r_2_non_sig_5_plot <- hist(r_2_non_sig_5, xlab = "Val of R Squared", ylab = "Count", 
+                          main = "R^2, Non-Sig, sigma = 5")
+r_2_non_sig_10_plot <- hist(r_2_non_sig_10, xlab = "Val of R Squared", ylab = "Count", 
+                          main = "R^2, Non-Sig, sigma = 10")
+
+```
+
+## Discussion
+
+For significant model, the F statistic follows F distribution. The p-value is heavily right-skewed and $R^2$ is large.  
+For non-significant model, the F statistic follows a logrithmic-like distribution, the p-value follows a uniform distribution and $R^2$ has majority near 0.
+
+The true distribution fits the simulation well. (The significant model, F statistic and non-significant model, p-value.)
+
+For significant model, as sigma increase, the F statistic gets smaller and more concentrated towards 0. This is understandable as F test compares explained variance and unexplained variance. As sigma increases, the unexplained variance increases thus the F score decreases.  
+The p-value, with large majority smaller than 0.05 when sigma = 1, gradually spreads wider as sigma increases. The noise covered the signal and makes the two models not distinguishable.
+The majority of $R^2$ is larger than 0.75 when sigma = 1 and majority smaller than 0.6 when sigma = 10. Also explains when the noise increase, the proportion of variation that can be explained becomes smaller.
+
+For non-significant model, the F statistic stays the same as sigma increases. This is because the signal portion is always not there and signal variance ratio stays the same all the time. p-value follows uniform distribution no matter what sigma is. $R^2$ is low and doesn't change along the sigma value. This is due to the proportion that can be explained by the linear regression is always 0, and increasing the sigma does not change the proportion, making $R^2$ similar across sigma values.
+
+In sum, large sigma brings higher noise. When large enough, it covered all the signals and occupies the majority of observation, resulting in the significant model behaves like a non-significant model.
+
+# Simulation Study 2: Using RMSE for Selection?
+
+## Introduction
+In homework we saw how Test RMSE can be used to select the “best” model. In this simulation study we will investigate how well this procedure works. Since splitting the data is random, we don’t expect it to work correctly each time. We could get unlucky. But averaged over many attempts, we should expect it to select the appropriate model.
+
+We will simulate from the model
+
+\[
+Y_i = \beta_0 + \beta_1 x_{i1} + \beta_2 x_{i2} + \beta_3 x_{i3} + \beta_4 x_{i4} + \beta_5 x_{i5} + \beta_6 x_{i6} + \epsilon_i
+\]
+
+where $\epsilon_i \sim N(0, \sigma^2)$ and
+
+- $\beta_0 = 0$,
+- $\beta_1 = 3$,
+- $\beta_2 = -4$,
+- $\beta_3 = 1.6$,
+- $\beta_4 = -1.1$,
+- $\beta_5 = 0.7$,
+- $\beta_6 = 0.5$.
+
+We will consider a sample size of $500$ and three possible levels of noise. That is, three values of $\sigma$.
+
+- $n = 500$
+- $\sigma \in (1, 2, 4)$
+
+Use the data found in [`study_2.csv`](study_2.csv) for the values of the predictors. These should be kept constant for the entirety of this study. The `y` values in this data are a blank placeholder.
+
+Each time you simulate the data, randomly split the data into train and test sets of equal sizes (250 observations for training, 250 observations for testing).
+
+For each, fit **nine** models, with forms:
+
+- `y ~ x1`
+- `y ~ x1 + x2`
+- `y ~ x1 + x2 + x3`
+- `y ~ x1 + x2 + x3 + x4`
+- `y ~ x1 + x2 + x3 + x4 + x5`
+- `y ~ x1 + x2 + x3 + x4 + x5 + x6`, the correct form of the model as noted above
+- `y ~ x1 + x2 + x3 + x4 + x5 + x6 + x7`
+- `y ~ x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8`
+- `y ~ x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8 + x9`
+
+For each model, calculate Train and Test RMSE.
+
+\[
+\text{RMSE}(\text{model, data}) = \sqrt{\frac{1}{n} \sum_{i = 1}^{n}(y_i - \hat{y}_i)^2}
+\]
+
+Repeat this process with $1000$ simulations for each of the $3$ values of $\sigma$. For each value of $\sigma$, create a plot that shows how average Train RMSE and average Test RMSE changes as a function of model size. Also show the number of times the model of each size was chosen for each value of $\sigma$.
+
+Done correctly, you will have simulated the $y$ vector $3×1000=3000$ times. You will have fit $9×3×1000=27000$ models. A minimal result would use $3$ plots. Additional plots may also be useful.
+
+Potential discussions:
+
+- Does the method **always** select the correct model? On average, does is select the correct model?
+- How does the level of noise affect the results?
+
+An additional tip:
+
+- To address the second discussion topic, consider making a line graph for the RMSE values at each level of $\sigma$. Within a single plot for a given $\sigma$, one line could correspond to the training data and the other to the test data. 
+
+## Methods
+
+```{r 2}
+library(readr)
+
+# Utility functions to calculate RMSE
+calc_train_rmse <- function(linear_model) {
+  RSS <- c(crossprod(linear_model$residuals))
+  MSE <- RSS / length(linear_model$residuals)
+  RMSE <- sqrt(MSE)
+}
+
+calc_test_rmse <- function(linear_model, test_set) {
+  y_hat <- predict(linear_model, newdata = test_set)
+  RSS <- c(crossprod(test_set$y - y_hat))
+  MSE <- RSS / length(test_set$y)
+  RMSE <- sqrt(MSE)
+}
+
+# initialize parameters as global variables
+beta_0 = 0
+beta_1 = 3
+beta_2 = -4
+beta_3 = 1.6
+beta_4 = -1.1
+beta_5 = 0.7
+beta_6 = 0.5
+n = 500
+sim_num = 1000
+sigmas = c(1, 2, 4)
+
+# initialize result ndarray
+rmse_res <- array(0, c(3, 9, 1000, 2))
+
+study2 <- read_csv('study_2.csv')
+
+# compute
+for(sigma_index in 1:3) {
+  for(i in 1:1000) {
+    # split training and test datasets
+    input_set <- study2
+    
+    y = beta_0 + beta_1 * input_set$x1 + beta_2 * input_set$x2 + beta_3 * input_set$x3 + beta_4 * input_set$x4 +
+    beta_5 * input_set$x5 + beta_6 * input_set$x6 + rnorm(250, 0, sigmas[sigma_index])
+  
+    input_set <- data.frame(y, input_set[2:10])
+    trn_idx = sample(1:nrow(input_set), 250)
+    training_set <- input_set[trn_idx, ]
+    test_set <- input_set[-trn_idx, ]
+  
+    model1 <- lm(y ~ x1, data = training_set)
+    model2 <- lm(y ~ x1 + x2, data = training_set)
+    model3 <- lm(y ~ x1 + x2 + x3, data = training_set)
+    model4 <- lm(y ~ x1 + x2 + x3 + x4, data = training_set)
+    model5 <- lm(y ~ x1 + x2 + x3 + x4 + x5, data = training_set)
+    model6 <- lm(y ~ x1 + x2 + x3 + x4 + x5 + x6, data = training_set)
+    model7 <- lm(y ~ x1 + x2 + x3 + x4 + x5 + x6 + x7, data = training_set)
+    model8 <- lm(y ~ x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8, data = training_set)
+    model9 <- lm(y ~ x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8 + x9, data = training_set)
+  
+    models <- list(model1, model2, model3, model4, model5, model6, model7, model8, model9)
+    for(model_id in 1:9) {
+      model <- models[[model_id]];
+      rmse_res[sigma_index, model_id, i, 1] = calc_train_rmse(model);
+      rmse_res[sigma_index, model_id, i, 2] = calc_test_rmse(model, test_set)
+    }
+  }
+}
+
+# calculate mean RMSE
+mean_rmse_data <- apply(rmse_res, c(1,2,4), mean)
+
+# calculate model selection
+model_selection <- array(0, c(3, 9))
+for(sigma_index in 1:3) {
+  for(i in 1:1000) {
+    sim_res <- rmse_res[sigma_index, ,i , 2]
+    sel_model_id <- which(sim_res ==min(sim_res))
+    model_selection[sigma_index, sel_model_id] <- model_selection[sigma_index, sel_model_id] + 1
+  }
+}
+```
+
+## Results
+- Green line indicates test RMSE. Red line indicated training RMSE.
+```{r }
+x <- seq(1:9)
+
+plot(x, mean_rmse_data[1,x,2], type="l", col="green", lwd=2, ylim=c(min(mean_rmse_data[1,,]),max(mean_rmse_data[1,,]))
+     , xlab = "model params", ylab = "RMSE", main = "RMSE vs Model, sigma = 1")
+lines(x, mean_rmse_data[1,x,1], col="red", lwd=2)
+
+plot(x, mean_rmse_data[2,x,2], type="l", col="green", lwd=2, ylim=c(min(mean_rmse_data[2,,]),max(mean_rmse_data[2,,]))
+     , xlab = "model params", ylab = "RMSE", main = "RMSE vs Model, sigma = 2")
+lines(x, mean_rmse_data[2,x,1], col="red", lwd=2)
+
+plot(x, mean_rmse_data[3,x,2], type="l", col="green", lwd=2, ylim=c(min(mean_rmse_data[3,,]),max(mean_rmse_data[3,,]))
+     , xlab = "model params", ylab = "RMSE", main = "RMSE vs Model, sigma = 4")
+lines(x, mean_rmse_data[3,x,1], col="red", lwd=2)
+```
+
+- Blue line indicates model selection when sigma = 1, green - sigma = 2, red - sigma = 4
+```{r}
+plot(model_selection[1,], type="l", col = "blue", xlab = "model paramaters", ylab = "number of simulation that has model selected", main = "Selected vs model size")
+lines(model_selection[2,], col = "green")
+lines(model_selection[3,], col = "red")
+```
+
+## Discussion
+
+The RMSE method selects the correct model majority of the time, in the case of sigma = 1, exceed 50% of all simulations.
+However, RMSE method does not work all the time, especially when sigma is large. On averae it selects the correct model.
+
+From the "Selected vs model size" chart, the x axis is the model's parameter count, and the y-axis is the number of times a model has been selected among the 1000 simulations. In other words, the number of times when the denoted model has the minimum RMSE among all models within a simulation. The lines indicates different standard deviations.
+We can see model 6 has been selected most of the times, and larger models are generally perferred than smaller models.
+The variation makes the RMSE method less reliable. As sigma increases, the peak at model 6 drops and spread across all models. The next most selected model is model 7. In general it has all the signals in 6 model and beta 7 plays some adverse effect that increases the RMSE.
+
+In general, the training RMSE is smaller than test RMSE. This is due to overfitting to the training data. Training and test RMSE drops significantly with addition of parameters before beta 4 and training RMSE keep dropping as number of parameters increases while test RMSE begin to slightly increase after beta 6. As sigma increase, the absolute RMSE and the difference between training and test RMSE both increases. The model is inevitably fitted to the noise in training data. This is reflected more significantly in the larger gap when sigma increases.
+
+
+
+# Simulation Study 3: Power
+
+## Introduction
+In this simulation study we will investigate the **power** of the significance of regression test for simple linear regression. 
+
+\[
+H_0: \beta_{1} = 0 \ \text{vs} \ H_1: \beta_{1} \neq 0
+\]
+
+Recall, we had defined the *significance* level, $\alpha$, to be the probability of a Type I error.
+
+\[
+\alpha = P[\text{Reject } H_0 \mid H_0 \text{ True}] = P[\text{Type I Error}]
+\]
+
+Similarly, the probability of a Type II error is often denoted using $\beta$; however, this should not be confused with a regression parameter.
+
+\[
+\beta = P[\text{Fail to Reject } H_0 \mid H_1 \text{ True}] = P[\text{Type II Error}]
+\]
+
+*Power* is the probability of rejecting the null hypothesis when the null is not true, that is, the alternative is true and $\beta_{1}$ is non-zero.
+
+\[
+\text{Power} = 1 - \beta = P[\text{Reject } H_0 \mid H_1 \text{ True}]
+\]
+
+Essentially, power is the probability that a signal of a particular strength will be detected. Many things affect the power of a test. In this case, some of those are:
+
+- Sample Size, $n$
+- Signal Strength, $\beta_1$
+- Noise Level, $\sigma$
+- Significance Level, $\alpha$
+
+We'll investigate the first three.
+
+To do so we will simulate from the model
+
+\[
+Y_i = \beta_0 + \beta_1 x_i + \epsilon_i
+\]
+
+where $\epsilon_i \sim N(0, \sigma^2)$.
+
+For simplicity, we will let $\beta_0 = 0$, thus $\beta_1$ is essentially controlling the amount of "signal." We will then consider different signals, noises, and sample sizes:
+
+- $\beta_1 \in (-2, -1.9, -1.8, \ldots, -0.1, 0, 0.1, 0.2, 0.3, \ldots 1.9, 2)$
+- $\sigma \in (1, 2, 4)$
+- $n \in (10, 20, 30)$
+
+We will hold the significance level constant at $\alpha = 0.05$.
+
+Use the following code to generate the predictor values, `x`: values for different sample sizes.
+
+```{r eval=FALSE}
+x_values = seq(0, 5, length = n)
+```
+
+For each possible $\beta_1$ and $\sigma$ combination, simulate from the true model at least $1000$ times. Each time, perform the significance of the regression test. To estimate the power with these simulations, and some $\alpha$, use
+
+\[
+\hat{\text{Power}} = \hat{P}[\text{Reject } H_0 \mid H_1 \text{ True}] = \frac{\text{# Tests Rejected}}{\text{# Simulations}}
+\]
+
+It is *possible* to derive an expression for power mathematically, but often this is difficult, so instead, we rely on simulation.
+
+Create three plots, one for each value of $\sigma$. Within each of these plots, add a “power curve” for each value of $n$ that shows how power is affected by signal strength, $\beta_1$.
+
+Potential discussions:
+
+- How do $n$, $\beta_1$, and $\sigma$ affect power? Consider additional plots to demonstrate these effects.
+- Are $1000$ simulations sufficient?
+
+An additional tip:
+
+- Search online for examples of power curves to give you inspiration for how you might construct your own plots here. You'll find both two-sided and one-sided power curves. Based on the way you're asked to construct the $\beta_1$ vector, you should be able to figure out which type is appropriate here.
+
+## Methods
+```{r 3}
+# init params as global variable
+beta_1s <- seq(-2, 2, by=0.1)
+sigmas <- c(1,2,4)
+ns <- c(10, 20, 30)
+alpha <- 0.05
+num_test <- 1000
+
+beta_1 = 1
+sigma = 1
+n = 15
+
+# init result ndarray
+power_res <- array(0, c(3, 3, 41))
+
+for(sigma_index in 1:3) {
+  for(n_index in 1:3) {
+    x_values = seq(0, 5, length = ns[n_index])
+    for(beta_1_index in 1: 41) {
+      count = 0
+      for(i in 1:num_test) {
+       
+        y <- beta_1s[beta_1_index] * x_values + rnorm(ns[n_index], 0, sigmas[sigma_index])
+        train_data <- data.frame(y, x_values)
+        model <- lm(y ~ x_values, data = train_data)
+        
+        # get p-value
+        sig_reg <- summary(model)$coef[2,4]
+        if(sig_reg < alpha) {
+          count = count + 1
+        }
+      }
+      power <- count / num_test
+      power_res[sigma_index, n_index, beta_1_index] <- power
+      
+    }
+  }
+}
+```
+
+## Results
+
+For power vs beta graphs
+- Green line - n = 10
+- Red line - n = 20
+- Blue line - n = 30
+
+
+```{r 3.results}
+x <- 1:41
+plot(x, power_res[1,1,x], type="l", col="green", lwd=2, ylim=c(min(power_res[1,,]),max(power_res[1,,]))
+     , xlab = "beta_1 value", ylab = "power", main = "beta_1 value vs power, sigma = 1", xaxt = "n")
+axis(1, at=1:41, labels=beta_1s)
+lines(x, power_res[1,2,x], col="red", lwd=2)
+lines(x, power_res[1,3,x], col="blue", lwd=2)
+
+plot(x, power_res[2,1,x], type="l", col="green", lwd=2, ylim=c(min(power_res[1,,]),max(power_res[1,,]))
+     , xlab = "beta_1 value", ylab = "power", main = "beta_1 value vs power, sigma = 2", xaxt = "n")
+axis(1, at=1:41, labels=beta_1s)
+lines(x, power_res[2,2,x], col="red", lwd=2)
+lines(x, power_res[2,3,x], col="blue", lwd=2)
+
+plot(x, power_res[3,1,x], type="l", col="green", lwd=2, ylim=c(min(power_res[1,,]),max(power_res[1,,]))
+     , xlab = "beta_1 value", ylab = "power", main = "beta_1 value vs power, sigma = 4", xaxt = "n")
+axis(1, at=1:41, labels=beta_1s)
+lines(x, power_res[3,2,x], col="red", lwd=2)
+lines(x, power_res[3,3,x], col="blue", lwd=5)
+```
+
+
+- Red indicates large beta absolute values
+- Blue indicates small beta absolute values
+
+```{r}
+x <- 1:3
+plot(x, power_res[1,x,1], type="l", col="green", lwd=1, ylim=c(min(power_res[1,,]),max(power_res[1,,]))
+     , xlab = "num samples", ylab = "power", main = "num samples vs power, sigma = 1", xaxt = "n")
+axis(1, at=1:3, labels=c(10, 20, 30))
+colfunc <- colorRampPalette(c("red", "blue"))(21)
+
+for(beta_id in 1:21) {
+  lines(x, power_res[1,x, beta_id], col=colfunc[beta_id], lwd=1)
+}
+
+
+plot(x, power_res[2,x,1], type="l", col="green", lwd=1, ylim=c(min(power_res[1,,]),max(power_res[1,,]))
+     , xlab = "num samples", ylab = "power", main = "num samples vs power, sigma = 2", xaxt = "n")
+axis(1, at=1:3, labels=c(10, 20, 30))
+colfunc <- colorRampPalette(c("red", "blue"))(21)
+
+for(beta_id in 1:21) {
+  lines(x, power_res[2,x, beta_id], col=colfunc[beta_id], lwd=1)
+}
+
+x <- 1:3
+plot(x, power_res[3,x,1], type="l", col="green", lwd=1, ylim=c(min(power_res[1,,]),max(power_res[1,,]))
+     , xlab = "num samples", ylab = "power", main = "num samples vs power, sigma = 4", xaxt = "n")
+axis(1, at=1:3, labels=c(10, 20, 30))
+colfunc <- colorRampPalette(c("red", "blue"))(21)
+
+for(beta_id in 1:21) {
+  lines(x, power_res[3,x, beta_id], col=colfunc[beta_id], lwd=1)
+}
+
+
+```
+
+## Discussion
+
+Generally, as the number of samples increase, the model has higher power. This is especially true when sigma is large. More samples provides a better signal.
+As the absolute value of beta increase, the power also increases. Strong signal helps to provide a higher power.
+As sigma increase, the two-tailed power curve shifts from a deep "V" to a "U" shape. The power that used to stay high as beta decreases drops faster under high standard deviation.  
+In sum, higher sample count, higher beta value and lower sigma contributes a high power.
+
+
+1000 simulations is sufficient. When simulating only 10 times, we got a not-so-smooth curve which indicates the oscillation of values, indicating the simulation is not sufficient to represent an average value. With 1000 simulations the result curve is smooth and indicating the power value represents the probability. 

@@ -1,0 +1,11 @@
+unnamed-chunk-1	set.seed
+unnamed-chunk-2	library	read_csv
+unnamed-chunk-3	[[	[<-	~	$	cbind	for	list	lm	pf	rep	return	rnorm	study1	summary
+1.results	c	df	f_stat_non_sig_1	f_stat_non_sig_10	f_stat_non_sig_5	f_stat_sig_1	f_stat_sig_10	f_stat_sig_5	hist	lines	n	p_val_non_sig_1	p_val_non_sig_10	p_val_non_sig_5	p_val_sig_1	p_val_sig_10	p_val_sig_5	par	r_2_non_sig_1	r_2_non_sig_10	r_2_non_sig_5	r_2_sig_1	r_2_sig_10	r_2_sig_5	seq
+2	[[	[<-	==	~	$	apply	array	c	crossprod	data.frame	for	length	library	list	lm	mean	min	nrow	predict	read_csv	rnorm	sample	sqrt	which
+unnamed-chunk-4	c	lines	max	mean_rmse_data	min	plot	seq
+unnamed-chunk-5	lines	model_selection	plot
+unnamed-chunk-6	n	seq
+3	[<-	<	~	$	array	c	data.frame	for	if	lm	rnorm	seq	summary
+3.results	axis	beta_1s	c	lines	max	min	plot	power_res
+unnamed-chunk-7	axis	c	colorRampPalette	for	lines	max	min	plot	power_res

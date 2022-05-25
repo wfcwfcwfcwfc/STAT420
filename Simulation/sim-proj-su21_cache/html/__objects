@@ -1,0 +1,11 @@
+unnamed-chunk-1	birthday	.Random.seed
+unnamed-chunk-2	study1
+unnamed-chunk-3	beta_0	beta_1	beta_2	beta_3	f_stat_non_sig_1	f_stat_non_sig_10	f_stat_non_sig_5	f_stat_sig_1	f_stat_sig_10	f_stat_sig_5	mlr_simulation	n	p_val_non_sig_1	p_val_non_sig_10	p_val_non_sig_5	p_val_sig_1	p_val_sig_10	p_val_sig_5	r_2_non_sig_1	r_2_non_sig_10	r_2_non_sig_5	r_2_sig_1	r_2_sig_10	r_2_sig_5	sim_num	simulation_non_sig_1	simulation_non_sig_10	simulation_non_sig_5	simulation_sig_1	simulation_sig_10	simulation_sig_5
+1.results	df1	df2	f_stat_non_sig_1_plot	f_stat_non_sig_10_plot	f_stat_non_sig_5_plot	f_stat_sig_1_plot	f_stat_sig_10_plot	f_stat_sig_5_plot	p	p_val_non_sig_1_plot	p_val_non_sig_10_plot	p_val_non_sig_5_plot	p_val_sig_1_plot	p_val_sig_10_plot	p_val_sig_5_plot	r_2_non_sig_1_plot	r_2_non_sig_10_plot	r_2_non_sig_5_plot	r_2_sig_1_plot	r_2_sig_10_plot	r_2_sig_5_plot	xf
+2	beta_0	beta_1	beta_2	beta_3	beta_4	beta_5	beta_6	calc_test_rmse	calc_train_rmse	i	input_set	mean_rmse_data	model	model_id	model_selection	model1	model2	model3	model4	model5	model6	model7	model8	model9	models	n	rmse_res	sel_model_id	sigma_index	sigmas	sim_num	sim_res	study2	test_set	training_set	trn_idx	y
+unnamed-chunk-4	x
+unnamed-chunk-5	
+unnamed-chunk-6	
+3	alpha	beta_1	beta_1_index	beta_1s	count	i	model	n	n_index	ns	num_test	power	power_res	sig_reg	sigma	sigma_index	sigmas	train_data	x_values	y
+3.results	x
+unnamed-chunk-7	beta_id	colfunc	x
